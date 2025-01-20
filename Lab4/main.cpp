@@ -371,11 +371,9 @@ int main()
 
         double myT = measureMyBestMatMul(A.data(), B.data(), C.data(), N, bestBlockSize);
 
-        // Замер MKL dgemm
         std::fill(C.begin(), C.end(), 0.0);
         double mklT = measureMKL_dgemm(A.data(), B.data(), C.data(), N);
 
-        // Во сколько раз MKL быстрее или медленнее
         double speedup = mklT / myT;
         std::cout << std::setw(5) << N << "   "
             << std::setw(9) << myT << "   "

@@ -14,7 +14,6 @@
 #define MAX_SOURCE_SIZE (0x100000)
 #ifdef _MSC_VER
 
-// Если компилируете в MSVC, нужно включить /arch:AVX2,
 #include <intrin.h>
 #else
 #include <immintrin.h>
@@ -107,18 +106,13 @@ void multSIMD(float* C, const float* A, const float* B, int N)
         {
             __m256 sumVec = _mm256_setzero_ps();
             int k = 0;
-            // k двигается по 8 элементов
             for (; k + 7 < N; k += 8)
             {
-                // A[r*N + k .. k+7] – это 8 подряд идущих элементов в строке A
                 __m256 aVec = _mm256_loadu_ps(&A[r * N + k]);
-                // B_T[c*N + k .. k+7] – это 8 подряд идущих элементов в строке B_T
-                // но физически это столбец B по row-major
                 __m256 bVec = _mm256_loadu_ps(&B_T[c * N + k]);
                 __m256 mulVec = _mm256_mul_ps(aVec, bVec);
                 sumVec = _mm256_add_ps(sumVec, mulVec);
             }
-            // Выгружаем partial
             float partial[8];
             _mm256_storeu_ps(partial, sumVec);
             float sum = 0.0f;
@@ -126,7 +120,6 @@ void multSIMD(float* C, const float* A, const float* B, int N)
             {
                 sum += partial[idx];
             }
-            // Хвост (если не кратно 8)
             for (; k < N; k++)
             {
                 sum += A[r * N + k] * B_T[c * N + k];
@@ -136,7 +129,6 @@ void multSIMD(float* C, const float* A, const float* B, int N)
     }
 }
 #else
-// Если нет AVX2, пусть просто выполняется OpenMP-версия
 void multSIMD(float* C, const float* A, const float* B, int N)
 {
     multParallel(C, A, B, N);
@@ -163,7 +155,6 @@ std::string loadKernelFile(const std::string& filename)
     std::ifstream file(filename);
     if (!file.is_open())
     {
-        // Обработка ошибки
         return "";
     }
     std::stringstream buffer;
@@ -173,7 +164,6 @@ std::string loadKernelFile(const std::string& filename)
 
 const char* getKernelSource(int kernel_id, size_t& src_size)
 {
-    // Выбираем имя файла по kernel_id
     std::string filename;
     switch (kernel_id)
     {
@@ -186,11 +176,11 @@ const char* getKernelSource(int kernel_id, size_t& src_size)
     default: filename = "kernel0.cl"; break;
     }
 
-    static std::string kernelSource;  // статическая строка, чтобы не потерять память
+    static std::string kernelSource;  
     kernelSource = loadKernelFile(filename);
 
     src_size = kernelSource.size();
-    return kernelSource.c_str();  // возвращаем C-строку
+    return kernelSource.c_str();  
 }
 
 

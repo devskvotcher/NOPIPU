@@ -97,7 +97,6 @@ void sumBlockingIntrSquare(T* a, T* b, T* c, int N, int block_size)
                 for (int jj = j; jj < j + block_size && jj < N; jj += 2)
                 {
                     __m128d Aij = _mm_load_pd(&a[ii * N + jj]);
-                    // b[jj*N + ii], b[(jj+1)*N + ii]
                     __m128d Bij = _mm_set_pd(b[(jj + 1) * N + ii], b[jj * N + ii]);
 
                     __m128d A2 = _mm_mul_pd(Aij, Aij);
@@ -161,8 +160,7 @@ void sumBlockingLogMul(T* a, T* b, T* c, int N, int block_size)
 }
 
 //-----------------------------------------------------------
-// 4) (ѕример с искусственной зависимостью):
-//    c[i*N + j] = ( (a[i*N + j]+b[j*N + i])^2 ) / (1 + a[i*N + j]^2 )
+// 4) c[i*N + j] = ( (a[i*N + j]+b[j*N + i])^2 ) / (1 + a[i*N + j]^2 )
 //-----------------------------------------------------------
 template <typename T>
 void sumUsual4(T* a, T* b, T* c, int N)
